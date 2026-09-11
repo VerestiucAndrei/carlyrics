@@ -1,0 +1,60 @@
+# XcodeGen spec. CI runs `xcodegen generate`; no .xcodeproj is checked in.
+name: CarLyrics
+options:
+  bundleIdPrefix: com.carlyrics
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+packages:
+  Core:
+    path: Core
+settings:
+  base:
+    # ponytail: Swift 5 language mode; strict concurrency can wait until the pipeline is proven.
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+targets:
+  CarLyrics:
+    type: application
+    platform: iOS
+    sources: [App]
+    dependencies:
+      - package: Core
+      - target: CarLyricsWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.carlyrics.app
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: CarLyrics
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # Files-app access to Documents: log file now, .lrc sideload later.
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+    entitlements:
+      path: App/CarLyrics.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.carlyrics]
+  CarLyricsWidget:
+    type: app-extension
+    platform: iOS
+    sources: [Widget]
+    dependencies:
+      - package: Core
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.carlyrics.app.widget
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: CarLyrics
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Widget/CarLyricsWidget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.carlyrics]

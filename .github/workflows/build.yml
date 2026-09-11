@@ -1,0 +1,45 @@
+name: build
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - run: xcodebuild -version
+      - run: brew install xcodegen
+      - run: xcodegen generate
+      - name: Core tests
+        run: swift test --package-path Core
+      - name: Build (unsigned)
+        run: |
+          xcodebuild -project CarLyrics.xcodeproj -scheme CarLyrics -sdk iphoneos \
+            -configuration Release -derivedDataPath build -quiet \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=
+      - name: Ad-hoc sign with entitlements
+        # SideStore copies entitlements from the existing signature when it re-signs.
+        # An unsigned binary has none, so the app group would be lost. Inner appex first.
+        run: |
+          APP=build/Build/Products/Release-iphoneos/CarLyrics.app
+          codesign -fs - --entitlements Widget/CarLyricsWidget.entitlements "$APP/PlugIns/CarLyricsWidget.appex"
+          codesign -fs - --entitlements App/CarLyrics.entitlements "$APP"
+          codesign -d --entitlements - "$APP"
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/CarLyrics.app Payload/
+          zip -qr CarLyrics.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with: { name: CarLyrics.ipa, path: CarLyrics.ipa }
+      - name: Move latest tag
+        # A release asset is a plain URL Safari on the phone can hand to SideStore.
+        if: github.ref == 'refs/heads/main'
+        run: git tag -f latest && git push -f origin latest
+      - uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: latest
+          name: latest build
+          prerelease: true
+          files: CarLyrics.ipa
