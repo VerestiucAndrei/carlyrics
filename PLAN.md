@@ -37,7 +37,7 @@ table are here; the original stays as reference for the reasoning.
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0–1 | Repo, CI, app + widget, App Group plumbing, debug screen | scaffolded, unbuilt |
+| 0–1 | Repo, CI, app + widget, App Group plumbing, debug screen | CI green, IPA published; awaiting device test |
 | 0.75 | Widget visible in CarPlay stack on real hardware. **Stop if this fails.** | |
 | 2 | Tier A: `MPMusicPlayerController` → live state in debug screen + widget | |
 | 3 | LRCLIB resolver with duration match, LRC parser, in-app karaoke view | |
@@ -52,6 +52,6 @@ table are here; the original stays as reference for the reasoning.
 
 ## Open risks (beyond the original register)
 
-- `macos-26` runner image / Xcode 26 selection: verified on first CI run.
+- ~~`macos-26` runner / Xcode 26~~: verified, runner ships Xcode 26.6.
 - WidgetKit may coalesce entries spaced under a few seconds; Phase 0.75 test uses 5s lines.
 - Free-tier "10 App IDs per 7 days": app + appex = 2. Keep bundle ids stable.
