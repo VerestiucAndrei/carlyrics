@@ -17,17 +17,12 @@ final class Coordinator: ObservableObject {
     private var trackKey: String?
     private var lines: [SharedState.Line] = []
     private var sub: AnyCancellable?
-    private var poll: Timer?
     private var reloadWork: DispatchWorkItem?
 
     func start() {
         KeepAlive.shared.start()
         music.start()
         sub = music.$snapshot.dropFirst().sink { [weak self] in self?.handle($0) }
-        // ponytail: 2s poll for seeks; the system player sends no seek notification.
-        poll = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.checkSeek() }
-        }
     }
 
     /// Writes a synthetic song so the widget path can be tested without a music source.
@@ -54,7 +49,7 @@ final class Coordinator: ObservableObject {
                 guard trackKey == key else { return }
                 lines = r.lines; lyricsStatus = r.status
                 Log.shared.add("lyrics: \(r.status)")
-                music.refresh()   // republish with a fresh position
+                if let snap = music.snapshot { handle(snap) }   // republish with lines attached
             }
         }
         publish(SharedState(source: "appleMusic", title: snap.title, artist: snap.artist, position: snap.position,
@@ -72,15 +67,5 @@ final class Coordinator: ObservableObject {
         let w = DispatchWorkItem { WidgetCenter.shared.reloadTimelines(ofKind: widgetKind) }
         reloadWork = w
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: w)
-    }
-
-    private func checkSeek() {
-        guard let s = state, s.source == "appleMusic", s.isPlaying else { return }
-        let expected = Date().timeIntervalSince(s.anchor)
-        let delta = music.currentPosition - expected
-        if abs(delta) > 1 {
-            Log.shared.add("seek: \(String(format: "%+.1f", delta))s")
-            music.refresh()
-        }
     }
 }
