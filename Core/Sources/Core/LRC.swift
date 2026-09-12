@@ -27,7 +27,7 @@ public enum LRC {
         return out.map { .init(t: $0.t - offset, text: $0.text) }.sorted { $0.t < $1.t }
     }
 
-    private static let wordTag = /<\d+:\d+(?:[.:]\d+)?>/
+    private static let wordTag = #/<\d+:\d+(?:[.:]\d+)?>/#
 
     /// `mm:ss.xx`, `mm:ss`, or the rarer `mm:ss:xx`.
     static func timestamp(_ s: String) -> TimeInterval? {
