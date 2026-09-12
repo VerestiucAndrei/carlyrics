@@ -37,10 +37,10 @@ table are here; the original stays as reference for the reasoning.
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0–1 | Repo, CI, app + widget, App Group plumbing, debug screen | CI green, IPA published; awaiting device test |
+| 0–1 | Repo, CI, app + widget, App Group plumbing, debug screen | done, verified on device |
 | 0.75 | Widget visible in CarPlay stack on real hardware. **Stop if this fails.** | |
-| 2 | Tier A: `MPMusicPlayerController` → live state in debug screen + widget | |
-| 3 | LRCLIB resolver with duration match, LRC parser, in-app karaoke view | |
+| 2 | Tier A: `MPMusicPlayerController` → live state in debug screen + widget | built, awaiting device test |
+| 3 | LRCLIB resolver with duration match, LRC parser, in-app karaoke view | built, awaiting device test |
 | 4 | Position handling: seek detection, route latency constant | |
 | 5 | Widget reload debounce, pause/resume policy, entry cap validation | |
 | 6 | Per-track offset store, one-tap calibration, ±100ms nudges | |
