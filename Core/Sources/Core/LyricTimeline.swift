@@ -31,7 +31,7 @@ public enum LyricTimeline {
     }
 
     /// Index of the last line at or before `t`; nil before the first line.
-    static func index(at t: TimeInterval, in lines: [SharedState.Line]) -> Int? {
+    public static func index(at t: TimeInterval, in lines: [SharedState.Line]) -> Int? {
         lines.lastIndex { $0.t <= t }
     }
 

@@ -35,6 +35,10 @@ targets:
         # Files-app access to Documents: log file now, .lrc sideload later.
         UIFileSharingEnabled: true
         LSSupportsOpeningDocumentsInPlace: true
+        UIBackgroundModes: [location]
+        NSLocationAlwaysAndWhenInUseUsageDescription: Keeps CarLyrics running while you drive so lyrics stay in sync. Location itself is not used.
+        NSLocationWhenInUseUsageDescription: Keeps CarLyrics running while you drive so lyrics stay in sync. Location itself is not used.
+        NSAppleMusicUsageDescription: Reads the currently playing song to look up its lyrics.
     entitlements:
       path: App/CarLyrics.entitlements
       properties:
