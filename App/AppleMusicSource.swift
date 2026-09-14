@@ -1,4 +1,5 @@
 import MediaPlayer
+import UIKit
 
 /// Tier A. The system player reports the Music app's state locally with an exact position.
 /// `snapshot` changes only on track change, play/pause, or a detected seek.
@@ -59,16 +60,24 @@ final class AppleMusicSource: ObservableObject {
             staleRun = 0
         }
 
+        // Backgrounded, the player extrapolates locally from its last sync: it keeps counting the
+        // old track through a track change, and never sees a seek. Only the foreground reading
+        // is truth; a background track change starts at 0 and the foreground refresh resyncs.
+        let active = UIApplication.shared.applicationState == .active
         let trackChanged = snapshot?.id != item.persistentID
         let stateChanged = snapshot?.isPlaying != playing
-        if !trackChanged && !stateChanged {
-            guard let s = snapshot, !stale else { return }
+        var position = raw
+        if trackChanged {
+            if !active || snapshot.map({ abs(raw - $0.expectedPosition) < 2 }) == true { position = 0 }
+        } else if !stateChanged {
+            guard active, let s = snapshot, !stale else { return }
             let delta = raw - s.expectedPosition
             guard abs(delta) > 1 else { return }
             Log.shared.add("seek \(String(format: "%+.1f", delta))s")
         }
+        Log.shared.add("\(reason) \(active ? "fg" : "bg") \(item.title ?? "?") raw=\(String(format: "%.1f", raw)) pos=\(String(format: "%.1f", position)) \(playing ? "playing" : "paused")")
         snapshot = Snapshot(id: item.persistentID, title: item.title ?? "", artist: item.artist ?? "",
                             album: item.albumTitle ?? "", duration: item.playbackDuration,
-                            position: trackChanged && stale ? 0 : raw, sampledAt: .now, isPlaying: playing)
+                            position: position, sampledAt: .now, isPlaying: playing)
     }
 }
